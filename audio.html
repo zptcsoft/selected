@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <script src="//cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+    <style>
+    #player {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 50px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        color: rgba(0, 0, 0, .8);
+        background: rgba(255, 255, 255, .8);
+        border-top: 1px solid #ccc;
+        z-index: 9999;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-flex-flow: column;
+        -ms-flex-flow: column;
+        flex-flow: column;
+        -webkit-justify-content: space-around;
+        -ms-flex-pack: distribute;
+        justify-content: space-around;
+    }
+    
+    #player .ctrl {
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-flex-flow: row nowrap;
+        -ms-flex-flow: row nowrap;
+        flex-flow: row nowrap;
+        -webkit-justify-content: space-around;
+        -ms-flex-pack: distribute;
+        justify-content: space-around;
+    }
+    
+    #player .ctrl .ctrlItem {
+        margin: 0 10px;
+        cursor: pointer;
+        -webkit-flex: 1 1 6%;
+        -ms-flex: 1 1 6%;
+        flex: 1 1 6%;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-justify-content: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+    }
+    
+    #player .ctrl .ctrlItem.track {
+        -webkit-flex: 1 1 70%;
+        -ms-flex: 1 1 70%;
+        flex: 1 1 70%;
+        -webkit-flex-flow: column nowrap;
+        -ms-flex-flow: column nowrap;
+        flex-flow: column nowrap;
+        -webkit-justify-content: space-between;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        position: relative;
+        top: -5px;
+        font-size: 12px;
+    }
+    
+    #player .track .info {
+        -webkit-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-justify-content: space-between;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+    }
+    
+    #player .track .progress {
+        position: relative;
+        width: 100%;
+        height: 5px;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, .2);
+    }
+    
+    #player .track .progress .bar,
+    #player .track .progress .preload-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 5px;
+    }
+    
+    #player .track .progress .bar {
+        width: 10%;
+        background: rgba(255, 80, 0, .9);
+        z-index: 999;
+    }
+    
+    #player .track .progress .preload-bar {
+        width: 30%;
+        background: rgba(0, 0, 0, .3);
+        z-index: 998;
+    }
+    
+    #player .volume {
+        position: relative;
+    }
+    
+    #player .volume:hover {
+        background: #ddd;
+    }
+    
+    #player .volume .volume-progress {
+        position: absolute;
+        right: 0;
+        bottom: 16px;
+        width: 100%;
+        height: 100px;
+        background: #ddd;
+        z-index: 9999;
+        display: none;
+    }
+    
+    #player .volume .volume-progress .volume-bar {
+        width: 4px;
+        height: 80px;
+        margin: 10px auto;
+        background: rgba(0, 0, 0, .2);
+        border-radius: 3px;
+        position: relative;
+    }
+    
+    #player .volume .volume-progress .volume-bar .bar {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 10%;
+        background: rgba(255, 80, 0, .9);
+        border-radius: 3px;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="player">
+        <div class="ctrl">
+            <div class="ctrlItem backward">
+                <i class="fa fa-step-backward"></i>
+            </div>
+            <div class="ctrlItem play">
+                <i class="fa fa-play"></i>
+            </div>
+            <div class="ctrlItem forward">
+                <i class="fa fa-step-forward"></i>
+            </div>
+            <div class="ctrlItem track">
+                <div class="info">
+                    <div class="title">unkown</div>
+                    <div class="time">
+                        <span class="curTime">--</span>
+                        <span> / </span>
+                        <span class="durTime">--</span>
+                    </div>
+                </div>
+                <div class="progress">
+                    <div class="bar"></div>
+                    <div class="preload-bar"></div>
+                </div>
+            </div>
+            <div class="ctrlItem volume">
+                <i class="fa fa-volume-up"></i>
+                <div class="volume-progress">
+                    <div class="volume-bar">
+                        <div class="bar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ctrlItem mode">
+                <i class="fa fa-random"></i>
+            </div>
+            <div class="ctrlItem list">
+                <i class="fa fa-list-ul"></i>
+            </div>
+        </div>
+        <!-- <audio id="audio" src="content/songs/ai_ni.mp3"></audio> -->
+    </div>
+    <script>
+    $(function() {
+        var player = $("#player"),
+            playBtn = $("#player .play i"),
+            volumeBtn = $("#player .volume i"),
+            volumeProgress = $("#player .volume .volume-progress"),
+            volumeBar = $("#player .volume .volume-progress .bar"),
+            modeBtn = $("#player .mode i"),
+            title = $("#player .title"),
+            curTime = $("#player .time .curTime"),
+            durTime = $("#player .time .durTime"),
+            progress = $("#player .progress"),
+            preload = $("#player .progress .preload-bar"),
+            bar = $("#player .progress .bar"),
+            audio = $("#audio")[0];
+
+        init();
+
+        playBtn.click(function() {
+            playToggle();
+        });
+
+        modeBtn.click(function() {
+            modeToggle();
+        });
+
+        volumeBtn.click(function() {
+            volumeToggle();
+        });
+
+        progress.click(function(evt){
+            changeProgress(evt);
+        });
+
+        volumeBtn.parent().hover(function() {
+            volumeProgress.css("display", "block");
+        }, function() {
+            volumeProgress.css("display", "none");
+        });
+
+        audio.addEventListener('timeupdate', update, false);
+
+        //初始化播放器
+        function init() {
+            if (!audio) {
+                audio = new Audio();
+                audio.src = "content/songs/ai_xiang_wei.mp3";
+            }
+            title.html("爱相偎");
+            volumeBar.css("height", "50%");
+            audio.volume = 0.5;
+        }
+        //处理时间
+        function getTime(data) {
+            function addZero(a) {
+                return a < 10 ? ("0" + a) : a;
+            }
+            var hour = addZero(Math.floor(data / 3600));
+            var min = addZero(Math.floor(data / 60));
+            var sec = addZero(Math.floor(data - hour * 3600 - min * 60));
+            var string = hour > 0 ? (hour + ":" + min + ":" + sec) : (min + ":" + sec);
+            return string;
+        }
+
+        //播放控制
+        function playToggle() {
+            var isplay = playBtn.hasClass("fa-pause");
+            if (isplay) {
+                //播放状态
+                playBtn.removeClass("fa-pause").addClass("fa-play");
+                audio.pause();
+            } else {
+                //暂停状态
+                playBtn.removeClass("fa-play").addClass("fa-pause");
+                audio.play();
+            }
+        }
+
+        //播放模式切换
+        function modeToggle() {
+            var isLoop = modeBtn.hasClass("fa-random");
+            if (isLoop) {
+                //循环状态
+                modeBtn.removeClass("fa-random").addClass("fa-retweet");
+
+            } else {
+                //随机状态
+                modeBtn.removeClass("fa-retweet").addClass("fa-random");
+
+            }
+        }
+
+        //播放状态控制
+        function update() {
+            //设置info
+            curTime.html(getTime(audio.currentTime));
+            durTime.html(getTime(audio.duration));
+
+            //设置缓冲进度条
+            var buffered = audio.buffered;
+            if (buffered.length) {
+                var loaded = Math.round(100 * buffered.end(0) / audio.duration);
+                preload.css("width", loaded + "%");
+            }
+
+            //设置播放进度条
+            var played = Math.round(100 * audio.currentTime / audio.duration);
+            bar.css("width", played + "%");
+        }
+
+        //
+        function changeProgress(evt){
+            var value = Math.round((evt.pageX - progress.offset().left) * 100 / progress.width());
+            bar.css("width",value + '%');
+            audio.currentTime = audio.duration * (value / 100);
+            console.log(getTime(audio.currentTime));
+            curTime.html(getTime(audio.currentTime));
+        }
+
+        //静音效果 fa fa-volume-off
+        function volumeToggle() {
+            var isOn = volumeBtn.hasClass("fa-volume-up");
+            if (isOn) {
+                //静音状态
+                volumeBtn.removeClass("fa-volume-up").addClass("fa-volume-off");
+                audio.muted = true;
+            } else {
+                //有音状态
+                volumeBtn.removeClass("fa-volume-off").addClass("fa-volume-up");
+                audio.muted = false;
+            }
+        }
+
+    });
+    </script>
+</body>
+
+</html>
