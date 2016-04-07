@@ -1,8 +1,7 @@
-精選
-========
+# audio player
+利用html5 audio track实现的支持歌词同步的音乐播放器。
 
-a collection of songs that I love, also as a showcase of syncing lyric with html5 audio element
+- [原版](//wayou.github.io/selected)
+- [自定义UI](//zptcsoft.github.io/selected/abc.html)
+- [自定义支持歌词](//zptcsoft.github.io/selected/audio.html)
 
-:point_right: [Go and Enjoy](http://wayou.github.io/selected)
-
-:exclamation: songs used in this project are only for research purpose!
