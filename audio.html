@@ -176,7 +176,7 @@
                     </div>
                 </div>
                 <div class="progress">
-                    <div class="bar"></div>
+                    <div class="playBar"></div>
                     <div class="preload-bar"></div>
                 </div>
             </div>
@@ -195,7 +195,7 @@
                 <i class="fa fa-list-ul"></i>
             </div>
         </div>
-        <!-- <audio id="audio" src="content/songs/ai_ni.mp3"></audio> -->
+        <audio id="audio" src="//a.clyp.it/enddsv44.mp3"></audio>
     </div>
     <script>
     $(function() {
@@ -203,20 +203,25 @@
             playBtn = $("#player .play i"),
             volumeBtn = $("#player .volume i"),
             volumeProgress = $("#player .volume .volume-progress"),
-            volumeBar = $("#player .volume .volume-progress .bar"),
+            volumeBar = $("#player .volume .volume-progress .volume-bar"),
+            volumeSetBar = $("#player .volume .volume-progress .volume-bar .bar"),
             modeBtn = $("#player .mode i"),
             title = $("#player .title"),
             curTime = $("#player .time .curTime"),
             durTime = $("#player .time .durTime"),
             progress = $("#player .progress"),
             preload = $("#player .progress .preload-bar"),
-            bar = $("#player .progress .bar"),
+            playBar = $("#player .progress .playBar"),
             audio = $("#audio")[0];
 
         init();
 
         playBtn.click(function() {
             playToggle();
+        });
+
+        progress.click(function(evt) {
+            changeProgress(evt);
         });
 
         modeBtn.click(function() {
@@ -227,14 +232,14 @@
             volumeToggle();
         });
 
-        progress.click(function(evt){
-            changeProgress(evt);
-        });
-
         volumeBtn.parent().hover(function() {
             volumeProgress.css("display", "block");
         }, function() {
             volumeProgress.css("display", "none");
+        });
+
+        volumeBar.click(function(evt){
+            volumeSet(evt);
         });
 
         audio.addEventListener('timeupdate', update, false);
@@ -243,10 +248,11 @@
         function init() {
             if (!audio) {
                 audio = new Audio();
-                audio.src = "content/songs/ai_xiang_wei.mp3";
+                audio.src = "//a.clyp.it/enddsv44.mp3";
+                audio.preload = 'auto';
             }
-            title.html("爱相偎");
-            volumeBar.css("height", "50%");
+            title.html("Pop Tune");
+            volumeSetBar.css("height", "50%");
             audio.volume = 0.5;
         }
         //处理时间
@@ -304,17 +310,18 @@
 
             //设置播放进度条
             var played = Math.round(100 * audio.currentTime / audio.duration);
-            bar.css("width", played + "%");
+            playBar.css("width", played + "%");
         }
 
-        //
-        function changeProgress(evt){
+        //点击改变进度
+        function changeProgress(evt) {
+            evt.preventDefault();
             var value = Math.round((evt.pageX - progress.offset().left) * 100 / progress.width());
-            bar.css("width",value + '%');
-            audio.currentTime = audio.duration * (value / 100);
-            console.log(getTime(audio.currentTime));
+            playBar.css("width", value + '%');
+            audio.currentTime = audio.duration * value / 100;
             curTime.html(getTime(audio.currentTime));
         }
+
 
         //静音效果 fa fa-volume-off
         function volumeToggle() {
@@ -328,6 +335,14 @@
                 volumeBtn.removeClass("fa-volume-off").addClass("fa-volume-up");
                 audio.muted = false;
             }
+        }
+
+        //设置声音大小
+        function volumeSet(evt){
+            var innerHeight=volumeBar.innerHeight();
+            var value=(innerHeight-(evt.pageY-volumeBar.offset().top))/innerHeight;
+            audio.volume=value;
+            volumeSetBar.css("height",innerHeight*value+"px");
         }
 
     });
